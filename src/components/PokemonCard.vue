@@ -23,7 +23,10 @@ function onImageError(event: Event) {
 
 <template>
   <article class="pokemon-card">
-    <div class="pokemon-card__link">
+    <RouterLink
+      class="pokemon-card__link"
+      :to="{ name: 'pokemon', params: { name: pokemon.name } }"
+    >
       <img
         class="pokemon-card__image"
         :src="pokemon.image"
@@ -35,7 +38,7 @@ function onImageError(event: Event) {
       />
       <span class="pokemon-card__number">{{ number }}</span>
       <h2 class="pokemon-card__name">{{ displayName }}</h2>
-    </div>
+    </RouterLink>
     <FavoriteButton
       class="pokemon-card__favorite"
       :active="favorite"

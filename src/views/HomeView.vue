@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import type { PokemonSummary } from '@/types/pokemon'
 import { usePokemonList } from '@/composables/usePokemonList'
 import PokemonGrid from '@/components/PokemonGrid.vue'
@@ -7,7 +8,14 @@ import PaginationControls from '@/components/PaginationControls.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import ErrorMessage from '@/components/ErrorMessage.vue'
 
-const page = ref(1)
+const route = useRoute()
+const router = useRouter()
+
+// The current page lives in the URL (?page=3), so reload and the back button keep it
+const page = computed(() => {
+  const value = Number(route.query.page)
+  return Number.isInteger(value) && value >= 1 ? value : 1
+})
 const { items, totalPages, loading, error, reload } = usePokemonList(page)
 
 // Local favorites until the Pinia store arrives in M4
@@ -23,8 +31,7 @@ function toggleFavorite(pokemon: PokemonSummary) {
 }
 
 function changePage(newPage: number) {
-  page.value = newPage
-  window.scrollTo({ top: 0 })
+  router.push({ query: { ...route.query, page: newPage === 1 ? undefined : String(newPage) } })
 }
 </script>
 

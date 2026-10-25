@@ -1,13 +1,13 @@
 <template>
   <header class="app-header">
     <div class="container app-header__inner">
-      <a href="/" class="app-header__brand">
+      <RouterLink :to="{ name: 'home' }" class="app-header__brand">
         <img src="@/assets/pokeball.svg" alt="" width="28" height="28" />
         <span>Pokédex</span>
-      </a>
+      </RouterLink>
       <nav aria-label="Main">
-        <a href="/">Home</a>
-        <a href="/favorites">Favorites</a>
+        <RouterLink :to="{ name: 'home' }">Home</RouterLink>
+        <RouterLink :to="{ name: 'favorites' }">Favorites</RouterLink>
       </nav>
     </div>
   </header>
@@ -50,5 +50,11 @@ nav a {
 
 nav a:hover {
   background: rgb(255 255 255 / 15%);
+}
+
+/* RouterLink adds this class to the link of the current page */
+nav a.router-link-exact-active {
+  background: #fff;
+  color: var(--color-primary);
 }
 </style>
