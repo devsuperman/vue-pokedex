@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import { useFavoritesStore } from '@/stores/favorites'
+
+const favorites = useFavoritesStore()
+</script>
+
 <template>
   <header class="app-header">
     <div class="container app-header__inner">
@@ -7,7 +13,12 @@
       </RouterLink>
       <nav aria-label="Main">
         <RouterLink :to="{ name: 'home' }">Home</RouterLink>
-        <RouterLink :to="{ name: 'favorites' }">Favorites</RouterLink>
+        <RouterLink :to="{ name: 'favorites' }">
+          Favorites
+          <span v-if="favorites.count" class="app-header__count">
+            {{ favorites.count }}<span class="visually-hidden"> saved</span>
+          </span>
+        </RouterLink>
       </nav>
     </div>
   </header>
@@ -42,6 +53,9 @@ nav {
 }
 
 nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-1) var(--space-3);
   border-radius: 999px;
   font-weight: 600;
@@ -56,5 +70,20 @@ nav a:hover {
 nav a.router-link-exact-active {
   background: #fff;
   color: var(--color-primary);
+}
+.app-header__count {
+  min-width: 1.4rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  line-height: 1.4rem;
+  text-align: center;
+}
+
+nav a.router-link-exact-active .app-header__count {
+  background: var(--color-primary);
+  color: #fff;
 }
 </style>

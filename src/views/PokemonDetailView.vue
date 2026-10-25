@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { NotFoundError } from '@/api/pokeapi'
 import { usePokemon } from '@/composables/usePokemon'
+import { useFavoritesStore } from '@/stores/favorites'
 import {
   artworkUrl,
   formatHeight,
@@ -11,6 +12,7 @@ import {
   formatWeight,
   padId,
 } from '@/utils/format'
+import FavoriteButton from '@/components/FavoriteButton.vue'
 import TypeBadge from '@/components/TypeBadge.vue'
 import StatBar from '@/components/StatBar.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
@@ -22,6 +24,7 @@ const props = defineProps<{ name: string }>()
 
 const router = useRouter()
 const { pokemon, loading, error, reload } = usePokemon(() => props.name)
+const favorites = useFavoritesStore()
 
 const notFound = computed(() => error.value instanceof NotFoundError)
 const displayName = computed(() => (pokemon.value ? formatName(pokemon.value.name) : ''))
@@ -38,6 +41,17 @@ const mainType = computed(() => types.value[0] ?? 'unknown')
 const totalStats = computed(
   () => pokemon.value?.stats.reduce((sum, s) => sum + s.base_stat, 0) ?? 0,
 )
+
+const isFavorite = computed(() => (pokemon.value ? favorites.isFavorite(pokemon.value.id) : false))
+
+function toggleFavorite() {
+  if (!pokemon.value) return
+  favorites.toggle({
+    id: pokemon.value.id,
+    name: pokemon.value.name,
+    image: artworkUrl(pokemon.value.id),
+  })
+}
 
 function goBack() {
   // Vue Router keeps the previous location in history.state.back.
@@ -71,6 +85,12 @@ function goBack() {
           <TypeBadge v-for="type in types" :key="type" :type="type" />
         </div>
       </div>
+      <FavoriteButton
+        class="detail__favorite"
+        :active="isFavorite"
+        :name="displayName"
+        @toggle="toggleFavorite"
+      />
     </header>
 
     <div class="detail__body">
@@ -126,6 +146,7 @@ function goBack() {
 }
 
 .detail__hero {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -133,6 +154,13 @@ function goBack() {
   padding: var(--space-6) var(--space-4);
   background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 35%, white), white);
   text-align: center;
+}
+
+.detail__favorite {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  transform: scale(1.2);
 }
 
 .detail__image {
