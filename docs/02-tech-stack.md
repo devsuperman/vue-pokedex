@@ -11,8 +11,8 @@ milestone needs it.
 | Framework | **Vue 3** with **Composition API** and `<script setup>` | Current standard style; what the official docs teach first |
 | Language | **TypeScript** (light usage) | Types for API responses catch mistakes early; can start with plain JS if preferred |
 | Build tool / dev server | **Vite** | Official tooling, instant HMR; scaffolded with `npm create vue@latest` |
-| Routing | **Vue Router 4** | List, details, favorites and 404 pages |
-| State management | **Pinia** | Official store; holds favorites (and caches) shared across pages |
+| Routing | **Vue Router** (v5) | List, details, favorites and 404 pages |
+| State management | **Pinia** (v4) | Official store; holds favorites (and caches) shared across pages |
 | HTTP | Native **`fetch`** wrapped in a small API module | No extra dependency; learn async handling directly |
 | Persistence | **`localStorage`** | Favorites survive reloads; no backend needed |
 | Styling | Plain **CSS** with scoped styles + CSS variables | Learn Vue's `<style scoped>`; no framework to learn at the same time. (Optional later: Tailwind) |
@@ -21,13 +21,16 @@ milestone needs it.
 | Lint / format | **ESLint** (`eslint-plugin-vue`) + **Prettier** | Offered by `create-vue`; consistent code |
 | Dev tools | **Vue DevTools** browser extension | Inspect components, Pinia state, router |
 | Deploy | **GitHub Pages** (via GitHub Actions) or Netlify/Vercel | Free static hosting |
-| Node | Node.js 20 LTS or newer | Required by Vite |
+| Node | Node.js `^22.18` or `>=24.12` | Required by Vite 8 |
 
 Scaffold command (pick: TypeScript, Router, Pinia, Vitest, ESLint, Prettier):
 
 ```bash
 npm create vue@latest
 ```
+
+> Note: `.npmrc` sets `legacy-peer-deps=true` to work around an npm 10 crash on
+> jsdom's optional `canvas` peer dependency.
 
 ## 2. Learning map — Vue concept → where it is used
 
@@ -43,15 +46,17 @@ npm create vue@latest
 | `watch` / `watchEffect` | Refetch when route param or page changes; debounce search |
 | Lifecycle hooks (`onMounted`) | Initial data fetch |
 | Props & emits | `PokemonCard` receives a Pokémon, emits `toggle-favorite` |
-| Slots | Generic `BaseCard` / `AppLayout` |
+| Slots | `EmptyState` (default slot + `#actions` named slot) |
 | Dynamic class & style binding | Type color badges, stat bar widths |
-| Composables (`useXxx`) | `usePokemonList`, `usePokemon`, `useDebounce` |
+| Composables (`useXxx`) | `usePokemonList`, `usePokemon`, `usePokemonSearch`, `useDebounce` |
 | Vue Router: routes, params, query, `RouterLink`, navigation, 404 | `/`, `/pokemon/:name`, `/favorites`, catch-all |
 | Lazy-loaded routes | Details and favorites pages |
 | Pinia: state, getters, actions | `favorites` store |
 | Pinia + persistence | Sync store to `localStorage` with `watch` |
 | `<Transition>` / `<TransitionGroup>` *(nice to have)* | Card hover/enter, favorites list |
-| Async components & `<Suspense>` *(optional)* | Details page |
+| `reactive()` unwrapping refs | `HomeView` wraps composable results so the template skips `.value` |
+| `defineModel` (v-model on a component) | `SearchBar` |
+| Route meta + navigation hooks | Page titles via `router.afterEach` |
 | Testing components & stores | Vitest + Vue Test Utils |
 
 ## 3. Folder structure
@@ -65,6 +70,7 @@ src/
 ├── composables/
 │   ├── usePokemonList.ts    # pagination, loading, error
 │   ├── usePokemon.ts        # one Pokémon's details
+│   ├── usePokemonSearch.ts  # client-side search over all names
 │   └── useDebounce.ts
 ├── stores/
 │   └── favorites.ts         # Pinia store, persisted to localStorage
@@ -73,12 +79,13 @@ src/
 │   ├── PokemonCard.vue
 │   ├── PokemonGrid.vue
 │   ├── TypeBadge.vue
-│   ├── StatBar.vue
 │   ├── FavoriteButton.vue
 │   ├── SearchBar.vue
 │   ├── PaginationControls.vue
+│   ├── StatBar.vue
 │   ├── LoadingSpinner.vue
-│   └── ErrorMessage.vue
+│   ├── ErrorMessage.vue
+│   └── EmptyState.vue       # slots: default + #actions
 ├── views/
 │   ├── HomeView.vue         # list + search
 │   ├── PokemonDetailView.vue
@@ -88,6 +95,8 @@ src/
 │   └── index.ts
 ├── utils/
 │   └── format.ts            # padId, units, id-from-url
+├── test/
+│   └── helpers.ts           # withScope(), mockFetch() for unit tests
 ├── App.vue
 └── main.ts
 ```
@@ -104,7 +113,7 @@ src/
 ```
 
 Rules:
-- **Components** are presentational: receive data via props, emit events, no fetching.
+- **Components** are presentational: receive data via props, emit events, no fetching. (`AppHeader` reads the favorites count from the store — the one exception.)
 - **Views** compose components and use composables/stores.
 - **Composables** hold reusable stateful logic (loading, error, data).
 - **API module** is the only place that knows URLs; it returns typed data.
@@ -152,4 +161,5 @@ without any API call.
 - `<script setup lang="ts">` everywhere; `defineProps` / `defineEmits` with types.
 - Conventional commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`).
 - One branch / PR per milestone.
-- Scripts: `npm run dev`, `npm run build`, `npm run test:unit`, `npm run lint`.
+- Scripts: `npm run dev`, `npm run build`, `npm run test:unit` / `npm test`, `npm run lint` (auto-fix), `npm run check:lint` / `npm run check:format` (CI, no fixes).
+- Deploy: `BASE_PATH=/<repo>/ npm run build` sets Vite's `base` for GitHub Pages; the workflow copies `index.html` to `404.html` so deep links work with `createWebHistory`.
