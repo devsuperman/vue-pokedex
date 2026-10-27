@@ -15,6 +15,7 @@ Study project: learning Vue 3 by building a Pokédex on top of [PokéAPI](https:
 1. [Business plan](docs/01-business-plan.md) — goals, scope, user stories
 2. [Tech stack](docs/02-tech-stack.md) — tools, architecture, Vue concepts map
 3. [Tasks](docs/03-tasks.md) — milestones and task checklist (with progress)
+4. [Learning guide](docs/04-learning-guide.md) — study path through the Vue concepts used here, with exercises
 
 ## Run it
 
